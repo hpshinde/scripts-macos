@@ -13,7 +13,9 @@ To safely edit the sudoers file:
 4. Press `i` to enter Insert mode, and Add the line above (with your username)
 5. Save and exit (in vi/vim, press `ESC`, then type `:wq` and press Enter)
 ⠀This configuration grants your user the ability to run the specific commands used in your script (rm and periodic) without a password prompt. It's more secure than giving blanket sudo access because it limits the commands that can be run without a password.
-If your script uses any other commands with sudo that I didn't catch in my review, you should add those to the NOPASSWD line as well.
+If your script uses any other commands with sudo, you should add those to the NOPASSWD line as well.
+
+**Note:** For cleanup to work, upgrade bash to ver. 5+ ... See: [How To Upgrade your Bash Version on Mac OS?](https://www.shell-tips.com/mac/upgrade-bash/#gsc.tab=0)
 
 ## Cleanup and Eject Script for USB Drives - Use with Caution
 
