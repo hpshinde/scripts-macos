@@ -1,0 +1,61 @@
+#!/bin/zsh
+
+# Function to send macOS notification
+send_notification() {
+    local title="$1"
+    local message="$2"
+    local success="$3"
+    
+    # Use osascript to create a native macOS notification
+    osascript -e "display notification \"$message\" with title \"$title\" $([[ "$success" == "true" ]] && echo "sound name \"Ping\"")"
+}
+
+# Function to clean up macOS hidden files on a USB drive
+clean_usb_drive() {
+    local usb_drive="$1"
+    
+    # Check if the drive exists
+    if [[ ! -d "$usb_drive" ]]; then
+        send_notification "USB Cleanup" "Error: Drive $usb_drive does not exist." "false"
+        return 1
+    }
+    
+    # Remove macOS hidden files
+    find "$usb_drive" \( \
+        -name ".DS_Store" -or \
+        -name "._*" -or \
+        -name ".Trashes" -or \
+        -name ".TemporaryItems" -or \
+        -name ".fseventsd" -or \
+        -name ".Spotlight-V100" \
+    \) -type f -delete 2>/dev/null
+    
+    # Check if find command was successful
+    if [[ $? -ne 0 ]]; then
+        send_notification "USB Cleanup" "Failed to remove hidden files from $usb_drive" "false"
+        return 1
+    fi
+    
+    # Remove empty directories
+    find "$usb_drive" -type d -empty -delete 2>/dev/null
+    
+    # Safely eject the drive
+    diskutil eject "$usb_drive"
+    
+    # Check if eject was successful
+    if [[ $? -eq 0 ]]; then
+        send_notification "USB Cleanup" "Cleaned and ejected $usb_drive successfully" "true"
+    else
+        send_notification "USB Cleanup" "Cleaned $usb_drive but failed to eject" "false"
+        return 1
+    fi
+}
+
+# Check if a drive path is provided
+if [[ $# -eq 0 ]]; then
+    send_notification "USB Cleanup" "Usage: $0 /Volumes/USB_DRIVE_NAME" "false"
+    exit 1
+fi
+
+# Clean and eject the specified drive
+clean_usb_drive "$1"
